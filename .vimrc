@@ -1,7 +1,11 @@
+" Use like otaku
 " config.vim
 
 let mapleader = ","
-
+set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos
+set fileencodings=utf-8,iso-2022-jp-3,euc-jisx0213,cp932,euc-jp,sjis,jis,latin,iso-2022-jp
+set showtabline=2
+set noshowmode
 set nocompatible
 set number                " Show numbers on the left
 set hlsearch              " Highlight search results
@@ -19,11 +23,11 @@ set noswapfile            " Do not leve any backup files
 set mouse=a               " Enable mouse on all modes
 set clipboard=unnamed,unnamedplus     " Use the OS clipboard
 set showmatch
-set termguicolors
 set splitright splitbelow
 set list lcs=tab:\¦\      "(here is a space)
 let &t_SI = "\e[6 q"      " Make cursor a line in insert
 let &t_EI = "\e[2 q"      " Make cursor a line in insert
+set signcolumn=number
 
 " Keep VisualMode after indent with > or <
 vmap < <gv
@@ -38,50 +42,75 @@ augroup vimrc-remember-cursor-position
   autocmd!
   autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
 augroup END" Install vim-plug for vim and neovim
-if empty(glob('~/.vim/autoload/plug.vim'))
+if empty(glob('~\USER\scoop\apps\vim\9.0\autoload\plug.vim'))
   silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
 " Plugins
-call plug#begin('~/.vim/plugged')
+call plug#begin('~/USER/vimfiles/plugged')
 " Plugins here !!!!
+" Defaults
 Plug 'tpope/vim-sensible'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' } " File navigator
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }     " Install fuzzy finder binary
 Plug 'junegunn/fzf.vim'               " Enable fuzzy finder in Vim
 Plug 'editorconfig/editorconfig-vim'  " Tab/Space trough projects
+
+""" LSP
 Plug 'neoclide/coc.nvim', {'branch': 'release'} " Intelisense
+Plug 'neovim/nvim-lspconfig'
+
 Plug 'sheerun/vim-polyglot'
-Plug 'wakatime/vim-wakatime'
-Plug 'flazz/vim-colorschemes'
-Plug 'mattn/emmet-vim'
-Plug 'https://github.com/AndrewRadev/tagalong.vim'
-Plug 'TovarishFin/vim-solidity'
+Plug 'wakatime/vim-wakatime' " wakatime
+Plug 'mattn/emmet-vim' " emmet
+Plug 'https://github.com/AndrewRadev/tagalong.vim' " autocomplete tags
+Plug 'TovarishFin/vim-solidity' " for solidity
+Plug 'davidhalter/jedi-vim'
+
+""" User Interface
+Plug 'flazz/vim-colorschemes' " 300 colorschemes
+Plug 'overcache/NeoSolarized' " theme
+Plug 'itchyny/lightline.vim' " Lightline
 Plug 'https://github.com/itchyny/lightline.vim.git'
-Plug 'itchyny/lightline.vim'
-Plug 'sainnhe/artify.vim'
+Plug 'sainnhe/artify.vim' " lightline icon integration
+Plug 'colepeters/spacemacs-theme.vim'
+Plug 'sainnhe/gruvbox-material'
+Plug 'phanviet/vim-monokai-pro'
+Plug 'flazz/vim-colorschemes'
+Plug 'chriskempson/base16-vim'
+Plug 'gruvbox-community/gruvbox'
+Plug 'xolox/vim-colorscheme-switcher'
 Plug 'itchyny/vim-gitbranch'
 Plug 'macthecadillac/lightline-gitdiff'
-Plug 'davidhalter/jedi-vim'
 Plug 'maximbaz/lightline-ale'
 Plug 'albertomontesg/lightline-asyncrun'
 Plug 'rmolin88/pomodoro.vim'
 Plug 'vim-syntastic/syntastic'
+Plug 'dracula/vim', { 'as': 'dracula' }
+
+""" Lua config and some lsp
 Plug 'voldikss/vim-floaterm'
 Plug 'bfrg/vim-cpp-modern'
-Plug 'neovim/nvim-lspconfig'
 Plug 'hrsh7th/cmp-nvim-lsp'
-Plug 'hrsh7th/cmp-buffer'
+Plug 'hrsh7th/cmp-buffer',{'for':'lua'}
 Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/nvim-cmp'
-
+Plug 'folke/todo-comments.nvim'
 " For vsnip users.
-Plug 'hrsh7th/cmp-vsnip'
-Plug 'hrsh7th/vim-vsnip'
+Plug 'hrsh7th/cmp-vsnip',{'for':'lua'}
+Plug 'hrsh7th/vim-vsnip',{'for':'lua'}
+Plug 'https://github.com/CRAG666/code_runner.nvim'
+Plug 'https://github.com/nvim-lua/plenary.nvim'
+
+""" MARKDOWNSTUFF
+Plug 'mattn/webapi-vim'
+Plug 'christoomey/vim-quicklink'
+Plug 'godlygeek/tabular'
+Plug 'preservim/vim-markdown'
+
 Plug 'https://github.com/Yggdroot/indentLine'
-Plug 'dracula/vim', { 'as': 'dracula' }
 Plug 'https://github.com/ap/vim-css-color'
 "Plug 'https://github.com/BourgeoisBear/clrzr'
 "" post install (yarn install | npm install) then load plugin only for editing supported files
@@ -91,26 +120,34 @@ Plug 'prettier/vim-prettier', {
 Plug 'mhinz/vim-startify'
 Plug 'ryanoasis/vim-devicons'
 call plug#end()
-colorscheme dracula
 
-set showtabline=2
+"theme for non-gui 
+colorscheme gruvbox-material
+
+" indentLine glyphs
 let g:indentLine_char_list = ['|', '¦', '┆', '┊']
+
 " Use Ctrl-k Ctrl-k to open a sidebar with the list of files
-map <C-k> :NERDTreeToggle<cr>
-                                    
-                        
+map <C-k><C-k> :NERDTreeToggle<cr>
+
 " Use Ctrl-P to open the fuzzy file opener
 nnoremap <C-p> :Files<cr>
+
+" ctrlp glyphs
+let g:webdevicons_enable_ctrlp = 1
+" adding to vim-startify screen
+let g:webdevicons_enable_startify = 1
+
+filetype plugin indent on
+syntax enable               
+
 " Set internal encoding of vim, not needed on neovim, since coc.nvim using some
 " unicode characters in the file autoload/float.vim
 set encoding=UTF-8
 
 " TextEdit might fail if hidden is not set.
 set hidden
-" ctrlp glyphs
-let g:webdevicons_enable_ctrlp = 1
-" adding to vim-startify screen
-let g:webdevicons_enable_startify = 1
+
 
 " Some servers have issues with backup files, see #649.
 set nobackup
@@ -272,32 +309,207 @@ nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
 " Resume latest coc list.
 nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 
+inoremap <silent><expr> <C-n> coc#pum#visible() ? coc#pum#next(1) : "\<C-n>"
+inoremap <silent><expr> <C-p> coc#pum#visible() ? coc#pum#prev(1) : "\<C-p>"
+inoremap <silent><expr> <down> coc#pum#visible() ? coc#pum#next(0) : "\<down>"
+inoremap <silent><expr> <up> coc#pum#visible() ? coc#pum#prev(0) : "\<up>"
+inoremap <silent><expr> <C-e> coc#pum#visible() ? coc#pum#cancel() : "\<C-e>"
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<CR>"
 let g:coc_global_extensions = [
     \ 'coc-tsserver',
     \ 'coc-json',
     \ 'coc-html',
     \ 'coc-css',
-    \ 'coc-phpls',
     \ 'coc-python',
 	\ 'coc-diagnostic',
     \ 'coc-emmet',
     \ 'coc-html-css-support',
-    \ 'coc-clangd',
     \ 'coc-sh',
-    \ 'coc-solidity',
     \ 'coc-pairs',
+    \ 'coc-solargraph',
     \]
-
 imap <expr> <tab> emmet#expandAbbrIntelligent("\<tab>")
 set mouse=a
 set wrap
-let g:lightline = {
-      \ 'component_function': {
-      \   'filetype': 'MyFiletype',
-      \   'fileformat': 'MyFileformat',
-      \ }
-      \ }
 
+
+function! CocDiagnosticError() abort "{{{
+  let info = get(b:, 'coc_diagnostic_info', {})
+  return get(info, 'error', 0) ==# 0 ? '' : "\uf00d" . info['error']
+endfunction "}}}
+function! CocDiagnosticWarning() abort "{{{
+  let info = get(b:, 'coc_diagnostic_info', {})
+  return get(info, 'warning', 0) ==# 0 ? '' : "\uf529" . info['warning']
+endfunction "}}}
+function! CocDiagnosticOK() abort "{{{
+  let info = get(b:, 'coc_diagnostic_info', {})
+  if get(info, 'error', 0) ==# 0 && get(info, 'error', 0) ==# 0
+    let msg = "\uf00c"
+  else
+    let msg = ''
+  endif
+  return msg
+endfunction "}}}
+function! CocStatus() abort "{{{
+  return get(g:, 'coc_status', '')
+endfunction "}}}
+function! GitGlobal() abort "{{{
+  let status = get(g:, 'coc_git_status', '')
+  return status ==# '' ? "\ue61b" : status
+endfunction "}}}
+function! PomodoroStatus() abort "{{{
+  if pomo#remaining_time() ==# '0'
+    return "\ue001"
+  else
+    return "\ue003 ".pomo#remaining_time()
+  endif
+endfunction "}}}
+function! DeviconsFiletype() "{{{
+  " return winwidth(0) > 70 ? (strlen(&filetype) ? WebDevIconsGetFileTypeSymbol() . ' ' . &filetype : 'no ft') : ''
+  return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype . ' ' . WebDevIconsGetFileTypeSymbol() : 'no ft') : ''
+endfunction "}}}
+function! TabNum(n) abort "{{{
+  return a:n." \ue0bb"
+endfunction "}}}
+function! ArtifyActiveTabNum(n) abort "{{{
+  return artify#convert(a:n, 'bold')." \ue0bb"
+endfunction "}}}
+function! ArtifyInactiveTabNum(n) abort "{{{
+  return artify#convert(a:n, 'double_struck')." \ue0bb"
+endfunction "}}}
+function! ArtifyLightlineTabFilename(s) abort "{{{
+  if g:vim_lightline_artify == 2
+    return artify#convert(lightline#tab#filename(a:s), 'monospace')
+  else
+    return lightline#tab#filename(a:s)
+  endif
+endfunction "}}}
+function! ArtifyLightlineMode() abort "{{{
+  if g:vim_lightline_artify == 2
+    return artify#convert(lightline#mode(), 'monospace')
+  else
+    return lightline#mode()
+  endif
+endfunction "}}}
+function! ArtifyLinePercent() abort "{{{
+  return artify#convert(string((100*line('.'))/line('$')), 'bold')
+endfunction "}}}
+function! ArtifyLineNum() abort "{{{
+  return artify#convert(string(line('.')), 'bold')
+endfunction "}}}
+function! ArtifyColNum() abort "{{{
+  return artify#convert(string(getcurpos()[2]), 'bold')
+endfunction "}}}
+"}}}
+set laststatus=2  " Basic
+
+let g:lightline = {}
+let g:lightline.separator = { 'left': "\ue0b8", 'right': "\ue0be" }
+"let g:lightline.subseparator = { 'left': "\ue0b9", 'right': "\ue0b9" }
+let g:lightline.tabline_separator = { 'left': "\ue0bc", 'right': "\ue0ba" }
+let g:lightline.tabline_subseparator = { 'left': "\ue0bb", 'right': "\ue0bb" }
+let g:lightline#asyncrun#indicator_none = ''
+let g:lightline#asyncrun#indicator_run = 'Running...'
+let g:vim_lightline_artify = 0
+if g:vim_lightline_artify == 0
+  let g:lightline.active = {
+        \ 'left': [ [ 'mode', 'paste' ],
+        \           [ 'readonly','gitbranch','gitstatus', 'filename', 'modified','fileformat'] ],
+        \ 'right': [ [ 'lineinfo' ],
+        \            ['linter_errors', 'linter_warnings', 'linter_ok', 'pomodoro' ],
+        \           [ 'asyncrun_status', 'coc_status'], ['filetype']]
+        \ }
+
+  let g:lightline.tabline = {
+        \ 'left': [ [ 'vim_logo', 'tabs' ] ],
+        \ 'right': [ [ 'git_global' ],
+        \ [ 'git_buffer' ] ]
+        \ }
+  let g:lightline.tab = {
+        \ 'active': [ 'tabnum', 'filename', 'modified' ],
+        \ }
+else
+  let g:lightline.active = {
+        \ 'left': [ [ 'artify_mode', 'paste' ],
+        \           [ 'readonly', 'filename', 'modified', 'fileformat', 'devicons_filetype' ] ],
+        \ 'right': [ [ 'artify_lineinfo' ],
+        \            [ 'linter_errors', 'linter_warnings', 'linter_ok', 'pomodoro' ],
+        \           [ 'asyncrun_status', 'coc_status' ] ]
+        \ }
+  let g:lightline.inactive = {
+        \ 'left': [ [ 'filename' , 'modified', 'fileformat', 'devicons_filetype' ]],
+        \ 'right': [ [ 'artify_lineinfo' ] ]
+        \ }
+  let g:lightline.tabline = {
+        \ 'left': [[ 'vim_logo', 'tabs' ] ],
+        \ 'right': [ [ 'git_global' ],
+        \ [ 'git_buffer' ] ]
+        \ }
+  let g:lightline.tab = {
+        \ 'active': [ 'artify_activetabnum', 'artify_filename', 'modified' ],
+        \ 'inactive': [ 'artify_inactivetabnum', 'filename', 'modified' ] }
+endif
+let g:lightline.tab_component_function = {
+      \ 'artify_activetabnum': 'ArtifyActiveTabNum',
+      \ 'artify_inactivetabnum': 'ArtifyInactiveTabNum',
+      \ 'artify_filename': 'ArtifyLightlineTabFilename',
+      \ 'tabnum': 'TabNum',
+      \ 'filename': 'lightline#tab#filename',
+      \ 'modified': 'lightline#tab#modified',
+      \ 'readonly': 'lightline#tab#readonly',
+      \ 'devicons_filetype': 'MyFileformat',
+      \ }
+let g:lightline.component = {
+      \ 'filetype': '%{&ft!=#""?&ft:"no ft"}',
+      \ 'gitstatus': '%<%{lightline_gitdiff#get_status()}',
+      \ 'git_buffer' : '%{get(b:, "coc_git_status", "")}',
+      \ 'git_global' : '%{GitGlobal()}',
+      \ 'artify_mode': '%{ArtifyLightlineMode()}',
+      \ 'artify_lineinfo': "%2{ArtifyLinePercent()}\uf295 %3{ArtifyLineNum()}:%-2{ArtifyColNum()}",
+      \ 'bufinfo': '%{bufname("%")}:%{bufnr("%")}',
+      \ 'vim_logo': "\ue7c5",
+      \ 'pomodoro': '%{PomodoroStatus()}',
+      \ 'mode': '%{lightline#mode()}',
+      \ 'absolutepath': '%F',
+      \ 'relativepath': '%f',
+      \ 'filename': '%t',
+      \ 'fileencoding': '%{&fenc!=#""?&fenc:&enc}',
+      \ 'fileformat': '%{&fenc!=#""?&fenc:&enc}[%{&ff}]',
+      \ 'modified': '%M',
+      \ 'bufnum': '%n',
+      \ 'paste': '%{&paste?"PASTE":""}',
+      \ 'readonly': '%R',
+      \ 'charvalue': '%b',
+      \ 'charvaluehex': '%B',
+      \ 'percent': '%2p%%',
+      \ 'percentwin': '%P',
+      \ 'spell': '%{&spell?&spelllang:""}',
+      \ 'lineinfo': '%2p%% %3l:%-2v',
+      \ 'line': '%l',
+      \ 'column': '%c',
+      \ 'close': '%999X X ',
+      \ 'winnr': '%{winnr()}'
+      \ }
+let g:lightline.component_function = {
+      \ 'devicons_filetype': 'DeviconsFiletype',
+      \ 'filetype' : 'MyFiletype',
+      \ 'fileformat' : 'MyFileformat',
+      \ 'coc_status': 'CocStatus',
+      \ 'gitbranch':'gitbranch#name'
+      \ }
+let g:lightline.component_visible_condition = {
+\     'gitstatus': 'lightline_gitdiff#get_status() !=# ""'
+\   }
+let g:lightline.component_expand = {
+      \ 'linter_warnings': 'CocDiagnosticWarning',
+      \ 'linter_errors': 'CocDiagnosticError',
+      \ 'linter_ok': 'CocDiagnosticOK',
+      \ 'asyncrun_status': 'lightline#asyncrun#status'
+      \ }
+let g:lightline.component_type = {
+      \ 'linter_warnings': 'warning',
+      \ 'linter_errors': 'error'
+      \ }
 function! MyFiletype()
   return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype . ' ' . WebDevIconsGetFileTypeSymbol() : 'no ft') : ''
 endfunction
@@ -305,7 +517,9 @@ endfunction
 function! MyFileformat()
   return winwidth(0) > 70 ? (&fileformat . ' ' . WebDevIconsGetFileFormatSymbol()) : ''
 endfunction
-map <F8> :w <CR> :!gcc % -o %< && ./%< <CR>
+function! Tabicon()
+  return (&fileformat.' '. WebDevIconsGetFileFormatSymbol())
+endfunction
 
 " Lua config
 set completeopt=menu,menuone,noselect
@@ -380,3 +594,58 @@ lua <<EOF
     capabilities = capabilities
   }
 EOF
+
+lua <<EOF
+require('code_runner').setup({
+  -- put here the commands by filetype
+  filetype = {
+		java = "cd $dir && javac $fileName && java $fileNameWithoutExt",
+    c = "cd $dir ; gcc cs50.c $fileName -o $fileNameWithoutExt ;./$fileNameWithoutExt.exe",
+    lua = "lua $fileName",
+    javascript = "node",
+		python = "python -u",
+    ruby = "ruby",
+		typescript = "deno run",
+		rust = "cd $dir && rustc $fileName && $dir/$fileNameWithoutExt",
+    html = "cd $dir && live-server $fileName"
+	},
+})
+vim.keymap.set('n', '<leader>r', ':RunCode<CR>', { noremap = true, silent = false })
+vim.keymap.set('n', '<leader>rf', ':RunFile<CR>', { noremap = true, silent = false })
+vim.keymap.set('n', '<leader>rft', ':RunFile tab<CR>', { noremap = true, silent = false })
+vim.keymap.set('n', '<leader>rp', ':RunProject<CR>', { noremap = true, silent = false })
+vim.keymap.set('n', '<leader>rc', ':RunClose<CR>', { noremap = true, silent = false })
+vim.keymap.set('n', '<leader>crf', ':CRFiletype<CR>', { noremap = true, silent = false })
+vim.keymap.set('n', '<leader>crp', ':CRProjects<CR>', { noremap = true, silent = false })
+EOF
+lua << EOF
+  require("todo-comments").setup {
+    -- your configuration comes here
+    -- or leave it empty to use the default settings
+    -- refer to the configuration section below
+  }
+EOF
+map <F5> :w<cr> :RunCode<cr>
+autocmd FileType html nnoremap <buffer> <F5> :w<cr> :split<cr> :RunCode<cr>
+map <M-`> :FloatermToggle<cr>
+:tmap <M-`> <C-\><C-N>:FloatermKill<cr>
+nnoremap <M-1> :split<cr> :term<cr>
+inoremap <M-1> <Esc>:split<cr> :term<cr>
+:tmap <M-1> <C-\><C-N>:q<CR>
+:tnoremap <A-h> <C-\><C-N><C-w>h
+:tnoremap <A-j> <C-\><C-N><C-w>j
+:tnoremap <A-k> <C-\><C-N><C-w>k
+:tnoremap <A-l> <C-\><C-N><C-w>l
+:inoremap <A-h> <C-\><C-N><C-w>h
+:inoremap <A-j> <C-\><C-N><C-w>j
+:inoremap <A-k> <C-\><C-N><C-w>k
+:inoremap <A-l> <C-\><C-N><C-w>l
+:nnoremap <A-h> <C-w>h
+:nnoremap <A-j> <C-w>j
+:nnoremap <A-k> <C-w>k
+:nnoremap <A-l> <C-w>l
+:tnoremap <Esc> <C-\><C-n>
+
+let g:vim_markdown_folding_level = 0
+let g:vim_markdown_override_foldtext = 0
+" Otaku out
