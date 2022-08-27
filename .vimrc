@@ -63,12 +63,17 @@ Plug 'neovim/nvim-lspconfig'
 
 Plug 'sheerun/vim-polyglot'
 Plug 'wakatime/vim-wakatime' " wakatime
-Plug 'mattn/emmet-vim' " emmet
+Plug 'mattn/emmet-vim' ", emmet
 Plug 'https://github.com/AndrewRadev/tagalong.vim' " autocomplete tags
 Plug 'TovarishFin/vim-solidity' " for solidity
 Plug 'davidhalter/jedi-vim'
 
+"snippets
+Plug 'SirVer/ultisnips'
+Plug 'honza/vim-snippets'
+
 """ User Interface
+Plug 'kyazdani42/nvim-web-devicons'
 Plug 'flazz/vim-colorschemes' " 300 colorschemes
 Plug 'overcache/NeoSolarized' " theme
 Plug 'itchyny/lightline.vim' " Lightline
@@ -80,7 +85,6 @@ Plug 'phanviet/vim-monokai-pro'
 Plug 'flazz/vim-colorschemes'
 Plug 'chriskempson/base16-vim'
 Plug 'gruvbox-community/gruvbox'
-Plug 'xolox/vim-colorscheme-switcher'
 Plug 'itchyny/vim-gitbranch'
 Plug 'macthecadillac/lightline-gitdiff'
 Plug 'maximbaz/lightline-ale'
@@ -88,6 +92,9 @@ Plug 'albertomontesg/lightline-asyncrun'
 Plug 'rmolin88/pomodoro.vim'
 Plug 'vim-syntastic/syntastic'
 Plug 'dracula/vim', { 'as': 'dracula' }
+Plug 'cometsong/CommentFrame.vim'
+Plug 'https://github.com/xiyaowong/nvim-transparent'
+Plug 'https://github.com/fgheng/winbar.nvim'
 
 """ Lua config and some lsp
 Plug 'voldikss/vim-floaterm'
@@ -103,13 +110,14 @@ Plug 'hrsh7th/cmp-vsnip',{'for':'lua'}
 Plug 'hrsh7th/vim-vsnip',{'for':'lua'}
 Plug 'https://github.com/CRAG666/code_runner.nvim'
 Plug 'https://github.com/nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim' " file explorer
 
 """ MARKDOWNSTUFF
 Plug 'mattn/webapi-vim'
 Plug 'christoomey/vim-quicklink'
 Plug 'godlygeek/tabular'
 Plug 'preservim/vim-markdown'
-
+Plug 'https://github.com/ellisonleao/glow.nvim'
 Plug 'https://github.com/Yggdroot/indentLine'
 Plug 'https://github.com/ap/vim-css-color'
 "Plug 'https://github.com/BourgeoisBear/clrzr'
@@ -131,7 +139,7 @@ let g:indentLine_char_list = ['|', '¦', '┆', '┊']
 map <C-k><C-k> :NERDTreeToggle<cr>
 
 " Use Ctrl-P to open the fuzzy file opener
-nnoremap <C-p> :Files<cr>
+
 
 " ctrlp glyphs
 let g:webdevicons_enable_ctrlp = 1
@@ -327,8 +335,13 @@ let g:coc_global_extensions = [
     \ 'coc-sh',
     \ 'coc-pairs',
     \ 'coc-solargraph',
+    \'coc-word',
+    \'coc-snippets',
+    \'coc-pyright',
     \]
-imap <expr> <tab> emmet#expandAbbrIntelligent("\<tab>")
+augroup EmmetSettings
+  autocmd! FileType html imap <tab> <plug>(emmet-expand-abbr)
+augroup END
 set mouse=a
 set wrap
 
@@ -607,7 +620,8 @@ require('code_runner').setup({
     ruby = "ruby",
 		typescript = "deno run",
 		rust = "cd $dir && rustc $fileName && $dir/$fileNameWithoutExt",
-    html = "cd $dir && live-server $fileName"
+    html = "cd $dir && live-server $fileName",
+    markdown = "cd $dir && chrome $dir/$fileName"
 	},
 })
 vim.keymap.set('n', '<leader>r', ':RunCode<CR>', { noremap = true, silent = false })
@@ -625,10 +639,12 @@ lua << EOF
     -- refer to the configuration section below
   }
 EOF
-map <F5> :w<cr> :RunCode<cr>
-autocmd FileType html nnoremap <buffer> <F5> :w<cr> :split<cr> :RunCode<cr>
+map <F5> :w<cr>:RunCode<cr>
+imap <F5> <C-\><C-N>:w<cr> :RunCode<cr> 
+autocmd TextChanged,TextChangedI *.md silent write
 map <M-`> :FloatermToggle<cr>
-:tmap <M-`> <C-\><C-N>:FloatermKill<cr>
+imap <M-`> <Esc>:FloatermToggle<cr>
+:tmap <M-`> <C-\><C-N>:FloatermToggle<cr>
 nnoremap <M-1> :split<cr> :term<cr>
 inoremap <M-1> <Esc>:split<cr> :term<cr>
 :tmap <M-1> <C-\><C-N>:q<CR>
@@ -648,4 +664,86 @@ inoremap <M-1> <Esc>:split<cr> :term<cr>
 
 let g:vim_markdown_folding_level = 0
 let g:vim_markdown_override_foldtext = 0
+let $FZF_DEFAULT_COMMAND = 'ag --hidden -l -g ""'
+" Files + devicons
+" Files + devicons
+function! Fzf_dev()
+  function! s:files()
+    let files = split(system($FZF_DEFAULT_COMMAND), '\n')
+    return s:prepend_icon(files)
+  endfunction
+
+  function! s:prepend_icon(candidates)
+    let result = []
+    for candidate in a:candidates
+      let filename = fnamemodify(candidate, ':p:t')
+      let icon = WebDevIconsGetFileTypeSymbol(filename, isdirectory(filename))
+      call add(result, printf("%s %s", icon, candidate))
+    endfor
+
+    return result
+  endfunction
+
+  function! s:edit_file(item)
+    let parts = split(a:item, ' ')
+    let file_path = get(parts, 1, '')
+    execute 'silent e' file_path
+  endfunction
+
+  call fzf#run({
+        \ 'source': <sid>files(),
+        \ 'sink':   function('s:edit_file'),
+        \ 'options': '-m -x +s',
+        \ 'down':    '40%' })
+endfunction
+nnoremap <C-p> <cmd>Telescope find_files<cr>
+inoremap<C-p> <C-\><C-N> <cmd>Telescope find_files<cr>
+lua << EOF
+local actions = require('telescope.actions')require('telescope').setup{
+  defaults = {
+    mappings = {
+      n = {
+        ["q"] = actions.close
+      },
+    },  
+  }
+}
+EOF
+lua << EOF
+require('winbar').setup({
+    enabled = true,
+
+    show_file_path = true,
+    show_symbols = true,
+
+    colors = {
+        path = '', -- You can customize colors like #c946fd
+        file_name = '',
+        symbols = '',
+    },
+
+    icons = {
+        file_icon_default = '',
+        seperator = '>',
+        editor_state = '●',
+        lock_icon = '',
+    },
+
+    exclude_filetype = {
+        'help',
+        'startify',
+        'dashboard',
+        'packer',
+        'neogitstatus',
+        'NvimTree',
+        'Trouble',
+        'alpha',
+        'lir',
+        'Outline',
+        'spectre_panel',
+        'toggleterm',
+        'qf',
+    }
+})
+EOF
 " Otaku out
