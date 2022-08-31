@@ -5,6 +5,7 @@ let mapleader = ","
 set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos
 set fileencodings=utf-8,iso-2022-jp-3,euc-jisx0213,cp932,euc-jp,sjis,jis,latin,iso-2022-jp
 set showtabline=2
+set cursorline
 set noshowmode
 set nocompatible
 set number                " Show numbers on the left
@@ -28,6 +29,16 @@ set list lcs=tab:\¦\      "(here is a space)
 let &t_SI = "\e[6 q"      " Make cursor a line in insert
 let &t_EI = "\e[2 q"      " Make cursor a line in insert
 set signcolumn=number
+set cursorline
+set cursorcolumn
+set nobackup
+set nowritebackup
+set scrolloff=8
+set relativenumber
+set autochdir
+autocmd WinEnter * setlocal cursorline
+autocmd WinLeave * setlocal nocursorline
+
 
 " Keep VisualMode after indent with > or <
 vmap < <gv
@@ -37,7 +48,7 @@ vmap > >gv
 vnoremap J :m '>+1<CR>gv=gv
 vnoremap K :m '<-2<CR>gv=gv
 
-" Autocomand to remember las editing position
+" Autocomand to remember last editing position
 augroup vimrc-remember-cursor-position
   autocmd!
   autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
@@ -65,9 +76,10 @@ Plug 'sheerun/vim-polyglot'
 Plug 'wakatime/vim-wakatime' " wakatime
 Plug 'mattn/emmet-vim' ", emmet
 Plug 'https://github.com/AndrewRadev/tagalong.vim' " autocomplete tags
-Plug 'TovarishFin/vim-solidity' " for solidity
 Plug 'davidhalter/jedi-vim'
 
+Plug 'nvim-treesitter/nvim-treesitter'
+Plug 'nvim-treesitter/nvim-treesitter-context'
 "snippets
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
@@ -93,9 +105,14 @@ Plug 'rmolin88/pomodoro.vim'
 Plug 'vim-syntastic/syntastic'
 Plug 'dracula/vim', { 'as': 'dracula' }
 Plug 'cometsong/CommentFrame.vim'
-Plug 'https://github.com/xiyaowong/nvim-transparent'
-Plug 'https://github.com/fgheng/winbar.nvim'
-
+Plug 'SmiteshP/nvim-gps'
+Plug 'akinsho/bufferline.nvim', { 'tag': 'v2.*' }
+Plug 'https://github.com/akinsho/toggleterm.nvim'
+Plug 'lambdalisue/battery.vim'
+Plug 'lukas-reineke/indent-blankline.nvim'
+Plug 'https://github.com/stevearc/aerial.nvim'
+Plug 'https://github.com/tpope/vim-fugitive'
+Plug 'lewis6991/gitsigns.nvim'
 """ Lua config and some lsp
 Plug 'voldikss/vim-floaterm'
 Plug 'bfrg/vim-cpp-modern'
@@ -105,6 +122,7 @@ Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'folke/todo-comments.nvim'
+Plug 'https://github.com/onsails/lspkind.nvim' " pictograms for cmp
 " For vsnip users.
 Plug 'hrsh7th/cmp-vsnip',{'for':'lua'}
 Plug 'hrsh7th/vim-vsnip',{'for':'lua'}
@@ -114,11 +132,8 @@ Plug 'nvim-telescope/telescope.nvim' " file explorer
 
 """ MARKDOWNSTUFF
 Plug 'mattn/webapi-vim'
-Plug 'christoomey/vim-quicklink'
 Plug 'godlygeek/tabular'
 Plug 'preservim/vim-markdown'
-Plug 'https://github.com/ellisonleao/glow.nvim'
-Plug 'https://github.com/Yggdroot/indentLine'
 Plug 'https://github.com/ap/vim-css-color'
 "Plug 'https://github.com/BourgeoisBear/clrzr'
 "" post install (yarn install | npm install) then load plugin only for editing supported files
@@ -127,6 +142,8 @@ Plug 'prettier/vim-prettier', {
   \ 'for': ['javascript', 'typescript', 'css', 'less', 'scss', 'json', 'graphql', 'markdown'] }
 Plug 'mhinz/vim-startify'
 Plug 'ryanoasis/vim-devicons'
+Plug 'https://github.com/justinhj/battery.nvim'
+
 call plug#end()
 
 "theme for non-gui 
@@ -139,8 +156,6 @@ let g:indentLine_char_list = ['|', '¦', '┆', '┊']
 map <C-k><C-k> :NERDTreeToggle<cr>
 
 " Use Ctrl-P to open the fuzzy file opener
-
-
 " ctrlp glyphs
 let g:webdevicons_enable_ctrlp = 1
 " adding to vim-startify screen
@@ -158,8 +173,7 @@ set hidden
 
 
 " Some servers have issues with backup files, see #649.
-set nobackup
-set nowritebackup
+
 
 " Give more space for displaying messages.
 set cmdheight=2
@@ -328,7 +342,6 @@ let g:coc_global_extensions = [
     \ 'coc-json',
     \ 'coc-html',
     \ 'coc-css',
-    \ 'coc-python',
 	\ 'coc-diagnostic',
     \ 'coc-emmet',
     \ 'coc-html-css-support',
@@ -338,14 +351,153 @@ let g:coc_global_extensions = [
     \'coc-word',
     \'coc-snippets',
     \'coc-pyright',
+    \'coc-git',
     \]
 augroup EmmetSettings
   autocmd! FileType html imap <tab> <plug>(emmet-expand-abbr)
 augroup END
 set mouse=a
 set wrap
+lua << EOF
+require('gitsigns').setup()
+-- Lua
+require("nvim-treesitter.configs").setup {
+    -- A list of parser names, or "all"
+    ensure_installed = {"c", "lua","python","javascript","json","css","html","markdown"},
 
+    -- Install languages synchronously (only applied to `ensure_installed`)
+    sync_install = false,
 
+    highlight = {
+      -- `false` will disable the whole extension
+      enable = true,
+    },
+  }
+
+-- Customized config
+require("nvim-gps").setup({
+
+	disable_icons = false,           -- Setting it to true will disable all icons
+
+	icons = {
+		["class-name"] = ' ',      -- Classes and class-like objects
+		["function-name"] = ' ',   -- Functions
+		["method-name"] = ' ',     -- Methods (functions inside class-like objects)
+		["container-name"] = '⛶ ',  -- Containers (example: lua tables)
+		["tag-name"] = '炙'         -- Tags (example: html tags)
+	},
+
+	-- Add custom configuration per language or
+	-- Disable the plugin for a language
+	-- Any language not disabled here is enabled by default
+	languages = {
+		-- Some languages have custom icons
+		["json"] = {
+			icons = {
+				["array-name"] = ' ',
+				["object-name"] = ' ',
+				["null-name"] = '[] ',
+				["boolean-name"] = 'ﰰﰴ ',
+				["number-name"] = '# ',
+				["string-name"] = ' '
+			}
+		},
+		["latex"] = {
+			icons = {
+				["title-name"] = "# ",
+				["label-name"] = " ",
+			},
+		},
+		["norg"] = {
+			icons = {
+				["title-name"] = " ",
+			},
+		},
+		["toml"] = {
+			icons = {
+				["table-name"] = ' ',
+				["array-name"] = ' ',
+				["boolean-name"] = 'ﰰﰴ ',
+				["date-name"] = ' ',
+				["date-time-name"] = ' ',
+				["float-name"] = ' ',
+				["inline-table-name"] = ' ',
+				["integer-name"] = '# ',
+				["string-name"] = ' ',
+				["time-name"] = ' '
+			}
+		},
+		["verilog"] = {
+			icons = {
+				["module-name"] = ' '
+			}
+		},
+		["yaml"] = {
+			icons = {
+				["mapping-name"] = ' ',
+				["sequence-name"] = ' ',
+				["null-name"] = '[] ',
+				["boolean-name"] = 'ﰰﰴ ',
+				["integer-name"] = '# ',
+				["float-name"] = ' ',
+				["string-name"] = ' '
+			}
+		},
+		["yang"] = {
+			icons = {
+				["module-name"] = " ",
+				["augment-path"] = " ",
+				["container-name"] = " ",
+				["grouping-name"] = " ",
+				["typedef-name"] = " ",
+				["identity-name"] = " ",
+				["list-name"] = "﬘ ",
+				["leaf-list-name"] = " ",
+				["leaf-name"] = " ",
+				["action-name"] = " ",
+			}
+		},
+
+		-- Disable for particular languages
+		-- ["bash"] = false, -- disables nvim-gps for bash
+		-- ["go"] = false,   -- disables nvim-gps for golang
+
+		-- Override default setting for particular languages
+		-- ["ruby"] = {
+		--	separator = '|', -- Overrides default separator with '|'
+		--	icons = {
+		--		-- Default icons not specified in the lang config
+		--		-- will fallback to the default value
+		--		-- "container-name" will fallback to default because it's not set
+		--		["function-name"] = '',    -- to ensure empty values, set an empty string
+		--		["tag-name"] = ''
+		--		["class-name"] = '::',
+		--		["method-name"] = '#',
+		--	}
+		--}
+	},
+
+	separator = ' > ',
+
+	-- limit for amount of context shown
+	-- 0 means no limit
+	depth = 0,
+
+	-- indicator used when context hits depth limit
+	depth_limit_indicator = ".."
+})
+EOF
+lua << END
+local battery = require("battery")
+battery.setup({
+	update_rate_seconds = 30, -- Number of seconds between checking battery status
+	show_status_when_no_battery = true, -- Don't show any icon or text when no battery found (desktop for example)
+	show_plugged_icon = true, -- If true show a cable icon alongside the battery icon when plugged in
+	show_unplugged_icon = true, -- When true show a diconnected cable icon when not plugged in
+	show_percent = true, -- Whether or not to show the percent charge remaining in digits
+    vertical_icons = true, -- When true icons are vertical, otherwise shows horizontal battery icon
+})
+END
 function! CocDiagnosticError() abort "{{{
   let info = get(b:, 'coc_diagnostic_info', {})
   return get(info, 'error', 0) ==# 0 ? '' : "\uf00d" . info['error']
@@ -367,8 +519,8 @@ function! CocStatus() abort "{{{
   return get(g:, 'coc_status', '')
 endfunction "}}}
 function! GitGlobal() abort "{{{
-  let status = get(g:, 'coc_git_status', '')
-  return status ==# '' ? "\ue61b" : status
+  let status = get(g:, 'coc_git_status', '')  
+  return status ==# '' ? ' local' : status
 endfunction "}}}
 function! PomodoroStatus() abort "{{{
   if pomo#remaining_time() ==# '0'
@@ -414,33 +566,31 @@ function! ArtifyColNum() abort "{{{
   return artify#convert(string(getcurpos()[2]), 'bold')
 endfunction "}}}
 "}}}
+"" vimscript
+
 set laststatus=2  " Basic
 
-let g:lightline = {}
-let g:lightline.separator = { 'left': "\ue0b8", 'right': "\ue0be" }
-"let g:lightline.subseparator = { 'left': "\ue0b9", 'right': "\ue0b9" }
-let g:lightline.tabline_separator = { 'left': "\ue0bc", 'right': "\ue0ba" }
-let g:lightline.tabline_subseparator = { 'left': "\ue0bb", 'right': "\ue0bb" }
+let g:lightline = {
+      \ 'enable': {
+      \   'tabline': 0
+      \ }
+      \ }
+let g:lightline.separator = { 'left': '', 'right': '' }
+let g:lightline.subseparator = { 'left': '', 'right': '' }
+let g:lightline.enable.tabline = 0
 let g:lightline#asyncrun#indicator_none = ''
 let g:lightline#asyncrun#indicator_run = 'Running...'
 let g:vim_lightline_artify = 0
+let g:lightline.colorscheme = 'wombat'
 if g:vim_lightline_artify == 0
   let g:lightline.active = {
         \ 'left': [ [ 'mode', 'paste' ],
-        \           [ 'readonly','gitbranch','gitstatus', 'filename', 'modified','fileformat'] ],
+        \           ['git_global'],['fname','modified','filetype']],
         \ 'right': [ [ 'lineinfo' ],
         \            ['linter_errors', 'linter_warnings', 'linter_ok', 'pomodoro' ],
-        \           [ 'asyncrun_status', 'coc_status'], ['filetype']]
+        \           [ 'asyncrun_status', 'coc_status'], ['fileformat'],['power'],['clock'],['context']]
         \ }
 
-  let g:lightline.tabline = {
-        \ 'left': [ [ 'vim_logo', 'tabs' ] ],
-        \ 'right': [ [ 'git_global' ],
-        \ [ 'git_buffer' ] ]
-        \ }
-  let g:lightline.tab = {
-        \ 'active': [ 'tabnum', 'filename', 'modified' ],
-        \ }
 else
   let g:lightline.active = {
         \ 'left': [ [ 'artify_mode', 'paste' ],
@@ -501,14 +651,19 @@ let g:lightline.component = {
       \ 'line': '%l',
       \ 'column': '%c',
       \ 'close': '%999X X ',
-      \ 'winnr': '%{winnr()}'
+      \ 'winnr': '%{winnr()}', 
       \ }
 let g:lightline.component_function = {
       \ 'devicons_filetype': 'DeviconsFiletype',
       \ 'filetype' : 'MyFiletype',
+      \'fname':'LightlineFilename',
       \ 'fileformat' : 'MyFileformat',
       \ 'coc_status': 'CocStatus',
-      \ 'gitbranch':'gitbranch#name'
+      \ 'gitbranch':'gitbranch#name',
+      \ 'context':'NvimGps',
+      \'clock':'Time',
+      \'battery': 'battery#component',
+      \'power':'Battery'
       \ }
 let g:lightline.component_visible_condition = {
 \     'gitstatus': 'lightline_gitdiff#get_status() !=# ""'
@@ -523,6 +678,12 @@ let g:lightline.component_type = {
       \ 'linter_warnings': 'warning',
       \ 'linter_errors': 'error'
       \ }
+let g:battery#update_tabline = 1    " For tabline.
+let g:battery#update_statusline = 1 " For statusline.
+function! Time()
+  let time = strftime('%H:%M  |   %d-%b-%y   |')
+    return ' '.time
+endfunction
 function! MyFiletype()
   return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype . ' ' . WebDevIconsGetFileTypeSymbol() : 'no ft') : ''
 endfunction
@@ -533,13 +694,28 @@ endfunction
 function! Tabicon()
   return (&fileformat.' '. WebDevIconsGetFileFormatSymbol())
 endfunction
-
+function! NvimGps() abort
+	return luaeval("require'nvim-gps'.is_available()") ?
+		\ luaeval("require'nvim-gps'.get_location()").'   |' : ''
+endfunction
+function! Battery()
+  return luaeval("require 'battery'.get_status_line()")."   |"
+endfunction
+function! LightlineFilename()
+  let root = fnamemodify(get(b:, 'gitbranch_path'), ':h:h')
+  let path = expand('%:p')
+  if path[:len(root)-1] ==# root
+    return path[len(root)+1:]
+  endif
+  return expand('%')
+endfunction
 " Lua config
 set completeopt=menu,menuone,noselect
 
 lua <<EOF
   -- Setup nvim-cmp.
   local cmp = require'cmp'
+  local lspkind = require('lspkind')
 
   cmp.setup({
     snippet = {
@@ -570,7 +746,13 @@ lua <<EOF
       -- { name = 'snippy' }, -- For snippy users.
     }, {
       { name = 'buffer' },
-    })
+    }),
+    formatting = {
+      format = lspkind.cmp_format({
+        mode = 'symbol',
+        maxwidth = 50
+      })
+    }
   })
 
   -- Set configuration for specific filetype.
@@ -600,44 +782,53 @@ lua <<EOF
     })
   })
 
+
+
   -- Setup lspconfig.
   local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
   -- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
   require('lspconfig')['sumneko_lua'].setup {
     capabilities = capabilities
   }
-EOF
 
-lua <<EOF
-require('code_runner').setup({
-  -- put here the commands by filetype
-  filetype = {
-		java = "cd $dir && javac $fileName && java $fileNameWithoutExt",
-    c = "cd $dir ; gcc cs50.c $fileName -o $fileNameWithoutExt ;./$fileNameWithoutExt.exe",
-    lua = "lua $fileName",
-    javascript = "node",
-		python = "python -u",
-    ruby = "ruby",
-		typescript = "deno run",
-		rust = "cd $dir && rustc $fileName && $dir/$fileNameWithoutExt",
-    html = "cd $dir && live-server $fileName",
-    markdown = "cd $dir && chrome $dir/$fileName"
-	},
-})
-vim.keymap.set('n', '<leader>r', ':RunCode<CR>', { noremap = true, silent = false })
-vim.keymap.set('n', '<leader>rf', ':RunFile<CR>', { noremap = true, silent = false })
-vim.keymap.set('n', '<leader>rft', ':RunFile tab<CR>', { noremap = true, silent = false })
-vim.keymap.set('n', '<leader>rp', ':RunProject<CR>', { noremap = true, silent = false })
-vim.keymap.set('n', '<leader>rc', ':RunClose<CR>', { noremap = true, silent = false })
-vim.keymap.set('n', '<leader>crf', ':CRFiletype<CR>', { noremap = true, silent = false })
-vim.keymap.set('n', '<leader>crp', ':CRProjects<CR>', { noremap = true, silent = false })
-EOF
-lua << EOF
+  -- CodeRunner Config
+  require('code_runner').setup({
+    -- put here the commands by filetype
+    filetype = {
+          java = "cd $dir && javac $fileName && java $fileNameWithoutExt",
+      c = "cd $dir && gcc $fileName -o $fileNameWithoutExt && $dir/$fileNameWithoutExt.exe",
+      lua = "lua $fileName",
+      javascript = "node",
+          python = "python -u",
+      ruby = "ruby",
+          typescript = "deno run",
+          rust = "cd $dir && rustc $fileName && $dir/$fileNameWithoutExt",
+      html = "cd $dir && live-server $fileName",
+      markdown = "cd $dir && chrome $dir/$fileName"
+      },
+  })
+  vim.keymap.set('n', '<leader>r', ':RunCode<CR>', { noremap = true, silent = false })
+  vim.keymap.set('n', '<leader>rf', ':RunFile<CR>', { noremap = true, silent = false })
+  vim.keymap.set('n', '<leader>rft', ':RunFile tab<CR>', { noremap = true, silent = false })
+  vim.keymap.set('n', '<leader>rp', ':RunProject<CR>', { noremap = true, silent = false })
+  vim.keymap.set('n', '<leader>rc', ':RunClose<CR>', { noremap = true, silent = false })
+  vim.keymap.set('n', '<leader>crf', ':CRFiletype<CR>', { noremap = true, silent = false })
+  vim.keymap.set('n', '<leader>crp', ':CRProjects<CR>', { noremap = true, silent = false })
+
   require("todo-comments").setup {
     -- your configuration comes here
     -- or leave it empty to use the default settings
     -- refer to the configuration section below
   }
+vim.opt.list = true
+vim.opt.listchars:append "space:⋅"
+vim.opt.listchars:append "eol:↴"
+
+require("indent_blankline").setup {
+    space_char_blankline = " ",
+    show_current_context = true,
+    show_current_context_start = true,
+}
 EOF
 map <F5> :w<cr>:RunCode<cr>
 imap <F5> <C-\><C-N>:w<cr> :RunCode<cr> 
@@ -665,37 +856,6 @@ inoremap <M-1> <Esc>:split<cr> :term<cr>
 let g:vim_markdown_folding_level = 0
 let g:vim_markdown_override_foldtext = 0
 let $FZF_DEFAULT_COMMAND = 'ag --hidden -l -g ""'
-" Files + devicons
-" Files + devicons
-function! Fzf_dev()
-  function! s:files()
-    let files = split(system($FZF_DEFAULT_COMMAND), '\n')
-    return s:prepend_icon(files)
-  endfunction
-
-  function! s:prepend_icon(candidates)
-    let result = []
-    for candidate in a:candidates
-      let filename = fnamemodify(candidate, ':p:t')
-      let icon = WebDevIconsGetFileTypeSymbol(filename, isdirectory(filename))
-      call add(result, printf("%s %s", icon, candidate))
-    endfor
-
-    return result
-  endfunction
-
-  function! s:edit_file(item)
-    let parts = split(a:item, ' ')
-    let file_path = get(parts, 1, '')
-    execute 'silent e' file_path
-  endfunction
-
-  call fzf#run({
-        \ 'source': <sid>files(),
-        \ 'sink':   function('s:edit_file'),
-        \ 'options': '-m -x +s',
-        \ 'down':    '40%' })
-endfunction
 nnoremap <C-p> <cmd>Telescope find_files<cr>
 inoremap<C-p> <C-\><C-N> <cmd>Telescope find_files<cr>
 lua << EOF
@@ -709,41 +869,130 @@ local actions = require('telescope.actions')require('telescope').setup{
   }
 }
 EOF
+
 lua << EOF
-require('winbar').setup({
-    enabled = true,
-
-    show_file_path = true,
-    show_symbols = true,
-
-    colors = {
-        path = '', -- You can customize colors like #c946fd
-        file_name = '',
-        symbols = '',
+require'treesitter-context'.setup{
+    enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
+    max_lines = 0, -- How many lines the window should span. Values <= 0 mean no limit.
+    trim_scope = 'outer', -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
+    patterns = { -- Match patterns for TS nodes. These get wrapped to match at word boundaries.
+        -- For all filetypes
+        -- Note that setting an entry here replaces all other patterns for this entry.
+        -- By setting the 'default' entry below, you can control which nodes you want to
+        -- appear in the context window.
+        default = {
+            'class',
+            'function',
+            'method',
+            'for', -- These won't appear in the context
+            'while',
+            'if',
+            'switch',
+            'case',
+        },
+        -- Example for a specific filetype.
+        -- If a pattern is missing, *open a PR* so everyone can benefit.
+        --   rust = {
+        --       'impl_item',
+        --   },
+    },
+    exact_patterns = {
+        -- Example for a specific filetype with Lua patterns
+        -- Treat patterns.rust as a Lua pattern (i.e "^impl_item$" will
+        -- exactly match "impl_item" only)
+        -- rust = true,
     },
 
-    icons = {
-        file_icon_default = '',
-        seperator = '>',
-        editor_state = '●',
-        lock_icon = '',
-    },
+    -- [!] The options below are exposed but shouldn't require your attention,
+    --     you can safely ignore them.
 
-    exclude_filetype = {
-        'help',
-        'startify',
-        'dashboard',
-        'packer',
-        'neogitstatus',
-        'NvimTree',
-        'Trouble',
-        'alpha',
-        'lir',
-        'Outline',
-        'spectre_panel',
-        'toggleterm',
-        'qf',
+    zindex = 20, -- The Z-index of the context window
+    mode = 'cursor',  -- Line used to calculate context. Choices: 'cursor', 'topline'
+    separator = '>', -- Separator between context and content. Should be a single character string, like '-'.
+}
+EOF
+" In your init.lua or init.vim
+set termguicolors
+lua << EOF
+require("bufferline").setup{
+  options = {
+    numbers = "ordinal",
+    diagnostics = "coc",
+    diagnostics_update_in_insert = true,
+    color_icons = true,
+    separator_style = "padded_slant",
+    diagnostics_indicator = function(count, level, diagnostics_dict, context)
+      local s = " "
+      for e, n in pairs(diagnostics_dict) do
+        local sym = e == "error" and " "
+          or (e == "warning" and " " or "" )
+        s = s .. n .. sym
+      end
+      return s
+    end,
+    offsets = {
+      {
+        filetype = "nerdtree",
+        text = "File Explorer",
+        highlight = "Directory",
+        separator = true
+      }
+
     }
+    
+  }
+}
+require('aerial').setup({
+  layout = {
+    max_width = {30,0.2},
+    min_width = 10,
+    default_direction = "prefer_right",
+    placement = "window"
+  },
+  close_behaviour = "auto",
+  highlight_on_hover = true,
+  nerd_font = "auto",
+  show_guides = true,
+  float = {
+    border = "rounded",
+    relative = "cursor",
+    height = 0.4
+  }
 })
 EOF
+lua << EOF
+require("toggleterm").setup{
+  direction = "float",
+}
+EOF
+" set
+autocmd TermEnter term://*toggleterm#*
+      \ tnoremap <silent><c-t> <Cmd>exe v:count1 . "ToggleTerm"<CR>
+
+" By applying the mappings this way you can pass a count to your
+" mapping to open a specific window.
+" For example: 2<C-t> will open terminal 2
+nnoremap <silent><c-t> <Cmd>exe v:count1 . "ToggleTerm cmd=pwsh"<CR>
+inoremap <silent><c-t> <Esc><Cmd>exe v:count1 . "ToggleTerm"<CR>
+set autoindent
+filetype indent on
+filetype plugin indent on
+inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? coc#_select_confirm() :
+      \ coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" :
+      \ CheckBackSpace() ? "\<TAB>" :
+      \ coc#refresh()
+
+function! CheckBackSpace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+let g:coc_snippet_next = '<tab>'
+inoremap <C-TAB> <C-\><c-n>:bnext<cr>
+nnoremap <C-TAB> <C-\><c-n>:bnext<cr>
+nnoremap<S-TAB> :AerialToggle<cr>
+set laststatus=3
+autocmd BufEnter set fileformat=dos;
+set colorcolumn=80
 " Otaku out
