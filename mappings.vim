@@ -13,9 +13,11 @@ inoremap <C-k><C-k> <esc>:NERDTreeToggle<cr>
 "Jump to next line and indent
 inoremap <C-Return> <CR><CR><C-o>k<Tab>
 "Move line up
-nnoremap - ddp
+nnoremap - :silent! m .+<cr>
+noremap  _ :silent! m  .-2<cr>
+inoremap <S-UP> <esc>:silent! m .-2<cr>a
+inoremap <S-DOWN> <esc>:silent! m .+<cr>a
 "Move line up
-nnoremap _ ddk0P
 "Capitalize selection
 vnoremap \ U
 "Delete present lines
@@ -30,8 +32,8 @@ autocmd TextChanged,TextChangedI *.md silent write
 noremap <M-`> :FloatermToggle<cr>
 inoremap <M-`> <Esc>:FloatermToggle<cr>
 :tnoremap <M-`> <C-\><C-N>:FloatermToggle<cr>
-nnoremap <M-1> :split<cr> :term<cr>ipwsh<cr>
-inoremap <M-1> <Esc>:split<cr> :term<cr>ipwsh<cr>
+nnoremap <M-1> :split<cr> :term<cr>
+inoremap <M-1> <Esc>:split<cr> :term<cr>
 :tnoremap <M-1> <C-\><C-N>:q<CR>
 :tnoremap <A-h> <C-\><C-N><C-w>h
 :tnoremap <A-j> <C-\><C-N><C-w>j
@@ -46,8 +48,8 @@ inoremap <M-1> <Esc>:split<cr> :term<cr>ipwsh<cr>
 :nnoremap <A-k> <C-w>k
 :nnoremap <A-l> <C-w>l
 :tnoremap <Esc> <C-\><C-n>
-nnoremap <silent><c-t> <Cmd>exe v:count1 . "ToggleTerm cmd=pwsh"<CR>pwsh<cr>
-inoremap <silent><c-t> <Esc><Cmd>exe v:count1 . "ToggleTerm"<CR>pwsh<cr>
+nnoremap <silent><c-t> <Cmd>exe v:count1 . "ToggleTerm cmd=pwsh"<CR>
+inoremap <silent><c-t> <Esc><Cmd>exe v:count1 . "ToggleTerm"<CR>
 
 "Telescope
 nnoremap <C-p> <cmd>Telescope find_files<cr>

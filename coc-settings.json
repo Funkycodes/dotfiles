@@ -1,14 +1,14 @@
 {
   "diagnostic.virtualText": true,
   "diagnostic.virtualTextCurrentLineOnly": true,
-    "codeLens.enable": true,
-    "solargraph.formatting": true,
-    "solargraph.diagnostics": true,
-    "suggest.floatConfig": {
-        "border": true,
-        "rounded": true,
-        "winblend": 2
-    },
+  "codeLens.enable": true,
+  "solargraph.formatting": true,
+  "solargraph.diagnostics": true,
+  "suggest.floatConfig": {
+    "border": true,
+    "rounded": true,
+    "winblend": 2
+  },
   "suggest.completionItemKindLabels": {
     "method": "  ",
     "function": "  ",
@@ -36,16 +36,53 @@
     "value": "  ",
     "enumMember": "  "
   },
-    "suggest.selection": "first",
-    "python.linting.enabled": true,
-    "python.formatting.provider": "autopep8",
-    "python.pythonPath": "/usr/bin/python3.10",
-    "python.linting.flake8Enabled": true,
-    "coc.preferences.formatOnSaveFiletypes": ["javascript", "python", "css", "html", "typescript", "c"],
-    "eslint.run": "onType",
-    "prettier.tabWidth": 2,
-    "eslint.autoFixOnSave": true,
-    "eslint.alwaysShowStatus": true,
-    "eslint.enable": true,
-    "clangd.path": "~/.config/coc/extensions/coc-clangd-data/install/15.0.1/clangd_15.0.1/bin/clangd"
+  "suggest.selection": "first",
+  "python.linting.enabled": true,
+  "python.formatting.provider": "autopep8",
+  "python.pythonPath": "/usr/bin/python3.10",
+  "python.linting.flake8Enabled": true,
+  "coc.preferences.formatOnSaveFiletypes": [
+    "javascript",
+    "python",
+    "css",
+    "html",
+    "typescript",
+    "c",
+    "json",
+    "sql",
+    "mysql"
+  ],
+  "eslint.run": "onType",
+  "prettier.tabWidth": 2,
+  "eslint.autoFixOnSave": true,
+  "prettier.singleQuote": true,
+  "eslint.alwaysShowStatus": true,
+  "eslint.enable": true,
+  "clangd.path": "~/.config/coc/extensions/coc-clangd-data/install/15.0.1/clangd_15.0.1/bin/clangd",
+  "languageserver": {
+    "sql": {
+      "command": "sql-language-server",
+      "args": ["up", "--method", "stdio"],
+      "filetypes": ["sql", "mysql"],
+      "settings": {
+        "sqlLanguageServer": {
+          "connections": [
+            {
+              "name": "taku",
+              "adapter": "mysql",
+              "user": "theMaskedOtaku",
+              "password": "Otakusage1",
+              "database": "birthdays",
+              "projectPaths": [
+                "/home/themaskedotaku/otakuVerse/projects/alx-sandbox/alx-higher_level_programming"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "sql.database": "mysql",
+  "sql.lintOnOpen": true,
+  "sql.lintOnChange": true
 }

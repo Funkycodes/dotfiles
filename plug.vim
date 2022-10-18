@@ -14,11 +14,10 @@ Plug 'neovim/nvim-lspconfig'
 Plug 'sheerun/vim-polyglot'
 Plug 'wakatime/vim-wakatime' " wakatime
 Plug 'mattn/emmet-vim',{'for':['html','css','javascriptreact','javascript']} " emmet
-Plug 'https://github.com/cohama/lexima.vim'
-Plug 'https://github.com/deathlyfrantic/lexima-template-rules'
-
 Plug 'https://github.com/AndrewRadev/tagalong.vim' " autocomplete tags
-"Plug 'davidhalter/jedi-vim'
+Plug 'https://github.com/cohama/lexima.vim'
+Plug 'cordx56/lexima.vim-coc.nvim'
+Plug 'https://github.com/deathlyfrantic/lexima-template-rules'
 
 Plug 'nvim-treesitter/nvim-treesitter'
 Plug 'nvim-treesitter/nvim-treesitter-context'
